@@ -2,13 +2,13 @@
 
 ## Getting Started
 
-To start project in development mode and run live-server
+To start project
 
 ```sh
 npm start
 ```
 
-To deploy project
+To start project in development mode
 
 ```sh
 npm run start:dev
