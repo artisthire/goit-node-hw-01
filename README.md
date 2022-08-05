@@ -1,14 +1,14 @@
-# Homework project for GoIT courses
+# Homework project #1 for GoUT courses about Node
 
 ## Getting Started
 
-To start project
+To start the project
 
 ```sh
 npm start
 ```
 
-To start project in development mode
+To start the project in development mode
 
 ```sh
 npm run start:dev

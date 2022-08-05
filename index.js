@@ -13,14 +13,22 @@ program.parse(process.argv);
 
 const argv = program.opts();
 
-function invokeAction({ action, id, name, email, phone }) {
+/**
+ * Performs operations on the contacts database.
+ * The type of operation is determined by the "action" parameter.
+ * @param {string} action - action type
+ * @param {string} id - contact id
+ * @param {string} name - contact name
+ * @param {string} email - contact email
+ * @param {string} phone - contact phone
+ */
+async function invokeAction({ action, id, name, email, phone }) {
   switch (action) {
     case "list":
       catchError(async () => {
         const contacts = await contactsApi.listContacts();
         console.table(contacts);
       });
-
       break;
 
     case "get":
@@ -30,25 +38,31 @@ function invokeAction({ action, id, name, email, phone }) {
 
       catchError(async () => {
         const contact = await contactsApi.getContactById(id);
-        console.table(contact);
+
+        if (contact) {
+          console.table(contact);
+        } else {
+          console.error(`\x1B[31m Contact with id ${id} not found`);
+        }
       });
+
       break;
 
     case "add":
       if (!name || !email || !phone) {
         console.error(
-          '\x1B[31m Parameters "name", "email" and "phone" is required'
-        );
-        console.error(
-          '\x1B[31m Use "-n, --name <name>", "-e, --email <email>", "-p, --phone <phone>"'
+          `\x1B[31m Parameters "name", "email" and "phone" is required\n
+          Use "-n, --name <name>", "-e, --email <email>", "-p, --phone <phone>"`
         );
         break;
       }
 
       catchError(async () => {
-        await contactsApi.addContact(name, email, phone);
+        const contact = await contactsApi.addContact(name, email, phone);
         console.log("\x1b[32m Contact added");
+        console.table(contact);
       });
+
       break;
 
     case "remove":
@@ -57,9 +71,15 @@ function invokeAction({ action, id, name, email, phone }) {
       }
 
       catchError(async () => {
-        await contactsApi.removeContact(id);
-        console.log("\x1b[32m Contact removed");
+        const contact = await contactsApi.removeContact(id);
+
+        if (contact) {
+          console.log("\x1b[32m Contact removed");
+        } else {
+          console.error(`\x1B[31m Contact id ${id} not found`);
+        }
       });
+
       break;
 
     default:
@@ -67,16 +87,26 @@ function invokeAction({ action, id, name, email, phone }) {
   }
 }
 
+/**
+ * Performs "id" parameter validation.
+ * @param {string} id - contact id
+ * @returns {boolean} - true - validation OK
+ */
 function validateId(id) {
   if (!id) {
-    console.error('\x1B[31m Parameter "id" is required');
-    console.error('\x1B[31m Use: "-i, --id <id>"');
+    console.error('\x1B[31m Parameter "id" is required\nUse: "-i, --id <id>"');
     return false;
   }
 
   return true;
 }
 
+/**
+ * Wraps an asynchronous function in a try catch block.
+ * Returns the result of the function in case of success, otherwise logs an error to the console.
+ * @param {function} func - asynchronous function
+ * @returns {any} - result of functions calls
+ */
 async function catchError(func) {
   try {
     return await func();
